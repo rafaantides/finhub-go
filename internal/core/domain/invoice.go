@@ -8,9 +8,10 @@ import (
 )
 
 type Invoice struct {
-	ID        uuid.UUID  `json:"id"`
-	Title     string     `json:"title"`
-	Amount    float64    `json:"amount"`
+	ID     uuid.UUID `json:"id"`
+	Title  string    `json:"title"`
+	Amount float64   `json:"amount"`
+	// Ver a diferença dos tipos das datas e uma forma de colocoar as duas
 	IssueDate *time.Time `json:"issue_date"`
 	DueDate   time.Time  `json:"due_date"`
 	StatusID  *uuid.UUID `json:"status_id"`
