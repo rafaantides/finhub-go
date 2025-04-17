@@ -1,0 +1,24 @@
+[settings]
+root = "."
+tmp_dir = "tmp"
+
+[build]
+bin = "tmp/main-worker-debts"
+cmd = "go build -o tmp/main-worker-debts ./cmd/worker"
+delay = 1000
+exclude = []
+full_bin = "tmp/main-worker-debts --env=./config/envs/dev.env debts"
+include = ["cmd", "internal", "config", "go.mod", "go.sum"]
+log = "air_errors.log"
+
+[run]
+cmd = "go run cmd/worker/main.go --env=./config/envs/dev.env debts"
+
+[log]
+time = true
+
+[color]
+main = "magenta"
+
+[misc]
+clean_on_exit = true

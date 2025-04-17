@@ -1,0 +1,46 @@
+services:
+  postgres:
+    container_name: finhub-go-postgres
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    container_name: finhub-go-rabbitmq
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "${MESSAGE_BUS_PORT:-5672}:5672"
+      - "${MESSAGE_BUS_MANAGEMENT_PORT:-15672}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${MESSAGE_BUS_USER}
+      RABBITMQ_DEFAULT_PASS: ${MESSAGE_BUS_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  redis:
+    container_name: finhub-go-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${CACHE_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: ${CACHE_PASSWORD}
+    command: ["redis-server", "--requirepass", "${CACHE_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+    name: finhub-go-postgres_data
+  rabbitmq_data:
+    name: finhub-go-rabbitmq_data
+  redis_data:
+    name: finhub-go-redis_data
