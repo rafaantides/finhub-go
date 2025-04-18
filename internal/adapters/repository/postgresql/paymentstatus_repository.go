@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"finhub-go/internal/config"
 	"finhub-go/internal/core/domain"
 	"finhub-go/internal/core/dto"
 	"finhub-go/internal/core/errors"
@@ -86,7 +87,13 @@ func (d *PostgreSQL) ListPaymentStatus(ctx context.Context, pgn *pagination.Pagi
 	query := d.Client.PaymentStatus.Query()
 
 	query = applyPaymentStatusFilters(query, pgn)
-	query = query.Order(ent.Desc(pgn.OrderBy))
+
+	if pgn.OrderDirection == config.OrderAsc {
+		query = query.Order(ent.Asc(pgn.OrderBy))
+	} else {
+		query = query.Order(ent.Desc(pgn.OrderBy))
+	}
+
 	query = query.Limit(pgn.PageSize).Offset(pgn.Offset())
 
 	rows, err := query.All(ctx)

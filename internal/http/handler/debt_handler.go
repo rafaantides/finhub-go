@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"finhub-go/internal/config"
 	"finhub-go/internal/core/dto"
 	appError "finhub-go/internal/core/errors"
 	"finhub-go/internal/core/ports/inbound"
@@ -83,17 +84,20 @@ func (h *DebtHandler) ListDebtsHandler(c *gin.Context) {
 	validColumns := map[string]bool{
 		"id":            true,
 		"invoice_id":    true,
+		"invoice":       true,
 		"title":         true,
 		"category_id":   true,
+		"category":      true,
 		"amount":        true,
 		"purchase_date": true,
 		"due_date":      true,
 		"status_id":     true,
+		"status":        true,
 		"created_at":    true,
 		"updated_at":    true,
 	}
 
-	if err := pgn.ValidateOrderBy("purchase_date", validColumns); err != nil {
+	if err := pgn.ValidateOrderBy("purchase_date", config.OrderAsc, validColumns); err != nil {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))
 		return
 	}

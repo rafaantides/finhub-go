@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"finhub-go/internal/config"
 	"finhub-go/internal/core/domain"
 	"finhub-go/internal/core/dto"
 	"finhub-go/internal/core/errors"
@@ -84,9 +85,14 @@ func (r *PostgreSQL) DeleteCategoryByID(ctx context.Context, id uuid.UUID) error
 
 func (r *PostgreSQL) ListCategories(ctx context.Context, pgn *pagination.Pagination) ([]dto.CategoryResponse, error) {
 	query := r.Client.Category.Query()
-
 	query = applyCategoryFilters(query, pgn)
-	query = query.Order(ent.Desc(pgn.OrderBy))
+
+	if pgn.OrderDirection == config.OrderAsc {
+		query = query.Order(ent.Asc(pgn.OrderBy))
+	} else {
+		query = query.Order(ent.Desc(pgn.OrderBy))
+	}
+
 	query = query.Limit(pgn.PageSize).Offset(pgn.Offset())
 
 	rows, err := query.All(ctx)

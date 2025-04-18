@@ -9,10 +9,11 @@ import (
 )
 
 type Pagination struct {
-	Page     int    `json:"page"`
-	PageSize int    `json:"page_size"`
-	OrderBy  string `json:"order_by"`
-	Search   string `json:"search"`
+	Page           int    `json:"page"`
+	PageSize       int    `json:"page_size"`
+	OrderBy        string `json:"order_by"`
+	OrderDirection string `json:"order_direction"`
+	Search         string `json:"search"`
 }
 
 func NewPagination(c *gin.Context) (*Pagination, error) {
@@ -27,13 +28,15 @@ func NewPagination(c *gin.Context) (*Pagination, error) {
 	}
 
 	orderBy := c.Query("order_by")
+	orderDirection := c.Query("order_direction")
 	search := c.Query("search")
 
 	return &Pagination{
-		Page:     page,
-		PageSize: pageSize,
-		OrderBy:  orderBy,
-		Search:   search,
+		Page:           page,
+		PageSize:       pageSize,
+		OrderBy:        orderBy,
+		OrderDirection: orderDirection,
+		Search:         search,
 	}, nil
 }
 
@@ -41,13 +44,21 @@ func (p *Pagination) Offset() int {
 	return (p.Page - 1) * p.PageSize
 }
 
-func (p *Pagination) ValidateOrderBy(defaultOrder string, validColumns map[string]bool) error {
+func (p *Pagination) ValidateOrderBy(defaultOrder string, defaultDirection string, validColumns map[string]bool) error {
 	if p.OrderBy == "" {
 		p.OrderBy = defaultOrder
-		return nil
 	}
-	if p.OrderBy != "" && !validColumns[p.OrderBy] {
+
+	if p.OrderDirection == "" {
+		p.OrderDirection = defaultDirection
+	}
+
+	if !validColumns[p.OrderBy] {
 		return fmt.Errorf("%s: %s", "order_by", "invalid value")
+	}
+
+	if p.OrderDirection != config.OrderAsc && p.OrderDirection != config.OrderDesc {
+		return fmt.Errorf("%s: %s", "order_direction", "invalid value")
 	}
 	return nil
 }

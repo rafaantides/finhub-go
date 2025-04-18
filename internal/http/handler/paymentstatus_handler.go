@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"finhub-go/internal/config"
 	"finhub-go/internal/core/dto"
 	appError "finhub-go/internal/core/errors"
 	"finhub-go/internal/core/ports/inbound"
@@ -80,7 +81,7 @@ func (h *PaymentStatusHandler) ListPaymentStatussHandler(c *gin.Context) {
 		"description": true,
 	}
 
-	if err := pgn.ValidateOrderBy("name", validColumns); err != nil {
+	if err := pgn.ValidateOrderBy("name", config.OrderAsc, validColumns); err != nil {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))
 		return
 	}

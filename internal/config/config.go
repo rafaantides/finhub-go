@@ -18,6 +18,10 @@ const (
 	ActionCreate  = "create"
 	ModelNubank   = "nubank"
 )
+const (
+	OrderAsc  = "asc"
+	OrderDesc = "desc"
+)
 
 type Config struct {
 	DBUser string
