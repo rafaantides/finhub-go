@@ -43,12 +43,12 @@ func ToNillableUUID(str string) (*uuid.UUID, error) {
 	return &parsedUUID, nil
 }
 
-func ToDate(dateStr string) (time.Time, error) {
+func ToDateTime(dateStr string) (time.Time, error) {
 	if dateStr == "" {
 		return time.Time{}, errors.ErrEmptyField
 
 	}
-	t, err := time.Parse("2006-01-02", dateStr)
+	t, err := time.Parse(time.RFC3339, dateStr)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -67,11 +67,11 @@ func ToDateUnsafe(dateStr *string) *time.Time {
 	return &t
 }
 
-func ToNillableDate(dateStr string) (*time.Time, error) {
+func ToNillableDateTime(dateStr string) (*time.Time, error) {
 	if dateStr == "" {
 		return nil, nil
 	}
-	t, err := time.Parse("2006-01-02", dateStr)
+	t, err := time.Parse(time.RFC3339, dateStr)
 	if err != nil {
 		return nil, err
 	}

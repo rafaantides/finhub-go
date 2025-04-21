@@ -10,6 +10,7 @@ import (
 )
 
 type Repository interface {
+	// TODO: rever esses docs
 	Close()
 
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.CategoryResponse, error)
@@ -22,7 +23,7 @@ type Repository interface {
 
 	GetDebtByID(ctx context.Context, id uuid.UUID) (*dto.DebtResponse, error)
 	CreateDebt(ctx context.Context, input domain.Debt) (*dto.DebtResponse, error)
-	UpdateDebt(ctx context.Context, input domain.Debt) (*dto.DebtResponse, error)
+	UpdateDebt(ctx context.Context, id uuid.UUID, input domain.Debt) (*dto.DebtResponse, error)
 	DeleteDebtByID(ctx context.Context, id uuid.UUID) error
 	ListDebts(ctx context.Context, flt dto.DebtFilters, pgn *pagination.Pagination) ([]dto.DebtResponse, error)
 	CountDebts(ctx context.Context, flt dto.DebtFilters, pgn *pagination.Pagination) (int, error)

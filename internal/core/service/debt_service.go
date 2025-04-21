@@ -28,7 +28,13 @@ func (s *debtService) CreateDebt(ctx context.Context, input domain.Debt) (*dto.D
 }
 
 func (s *debtService) UpdateDebt(ctx context.Context, id uuid.UUID, input domain.Debt) (*dto.DebtResponse, error) {
-	return s.repo.UpdateDebt(ctx, input)
+	// TODO: rever aqui
+	// {
+// 	"message": "Bad Request",
+// 	"details": "purchase_date: parsing time \"2025-03-25T11:00:00.000Z\": extra text: \"T11:00:00.000Z\""
+// }
+// 	"purchase_date": "2025-03-25T11:00:00.000Z",
+	return s.repo.UpdateDebt(ctx, id, input)
 }
 
 func (s *debtService) DeleteDebtByID(ctx context.Context, id uuid.UUID) error {

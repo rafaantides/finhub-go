@@ -81,7 +81,7 @@ func (h *PaymentStatusHandler) ListPaymentStatussHandler(c *gin.Context) {
 		"description": true,
 	}
 
-	if err := pgn.ValidateOrderBy("name", config.OrderAsc, validColumns); err != nil {
+	if err := pgn.ValidateOrderBy("name", config.OrderDesc, validColumns); err != nil {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))
 		return
 	}

@@ -1,4 +1,4 @@
-package importer
+package upload
 
 import (
 	"encoding/csv"
@@ -12,15 +12,15 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-type importerService struct {
+type uploadService struct {
 	mb messagebus.MessageBus
 }
 
-func NewImporterService(mb messagebus.MessageBus) inbound.ImporterService {
-	return &importerService{mb: mb}
+func NewUploadService(mb messagebus.MessageBus) inbound.UploadService {
+	return &uploadService{mb: mb}
 }
 
-func (c *importerService) ImportFile(resource, model, action string, file multipart.File, fileHeader *multipart.FileHeader) error {
+func (c *uploadService) ImportFile(resource, model, action string, file multipart.File, fileHeader *multipart.FileHeader) error {
 	fileType, err := detectFileType(file)
 	if err != nil {
 		return err
@@ -46,12 +46,12 @@ func (c *importerService) ImportFile(resource, model, action string, file multip
 	return c.readRows(resource, model, action, filename, rows)
 }
 
-func (c *importerService) readCSV(file multipart.File) ([][]string, error) {
+func (c *uploadService) readCSV(file multipart.File) ([][]string, error) {
 	reader := csv.NewReader(file)
 	return reader.ReadAll()
 }
 
-func (c *importerService) readXLSX(file multipart.File) ([][]string, error) {
+func (c *uploadService) readXLSX(file multipart.File) ([][]string, error) {
 	f, err := excelize.OpenReader(file)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (c *importerService) readXLSX(file multipart.File) ([][]string, error) {
 	return f.GetRows(sheetName)
 }
 
-func (c *importerService) readRows(resource, model, action, filename string, rows [][]string) error {
+func (c *uploadService) readRows(resource, model, action, filename string, rows [][]string) error {
 	if len(rows) < 2 {
 		return fmt.Errorf("invalid file: no data found")
 	}

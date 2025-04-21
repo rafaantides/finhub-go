@@ -8,15 +8,15 @@ import (
 )
 
 const (
-	BadRequest          = "Invalid request"
+	BadRequest          = "Bad Request"
 	Unauthorized        = "Unauthorized"
-	Forbidden           = "Access forbidden"
-	NotFound            = "Resource not found"
-	Conflict            = "Data conflict"
+	Forbidden           = "Forbidden"
+	NotFound            = "Not found"
+	Conflict            = "Conflict"
 	UnprocessableEntity = "Unprocessable entity"
-	TooManyRequests     = "Too many requests, please try again later"
+	TooManyRequests     = "Too many requests"
 	InternalServerError = "Internal server error"
-	ServiceUnavailable  = "Service temporarily unavailable"
+	ServiceUnavailable  = "Service unavailable"
 )
 
 var ErrorMessages = map[int]string{

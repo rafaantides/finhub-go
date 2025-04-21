@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ImporterHandler struct {
-	service inbound.ImporterService
+type UploadHandler struct {
+	service inbound.UploadService
 }
 
-func NewImporterHandler(service inbound.ImporterService) *ImporterHandler {
-	return &ImporterHandler{service: service}
+func NewUploadHandler(service inbound.UploadService) *UploadHandler {
+	return &UploadHandler{service: service}
 }
 
-func (h *ImporterHandler) ProcessFileHandler(c *gin.Context) {
+func (h *UploadHandler) ProcessFileHandler(c *gin.Context) {
 	resource := c.PostForm("resource")
 	action := c.PostForm("action")
 	model := c.PostForm("model")

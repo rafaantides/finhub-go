@@ -42,6 +42,6 @@ type PaymentStatusService interface {
 	ListPaymentStatus(ctx context.Context, pgn *pagination.Pagination) ([]dto.PaymentStatusResponse, int, error)
 }
 
-type ImporterService interface {
+type UploadService interface {
 	ImportFile(resource, model, action string, file multipart.File, fileHeader *multipart.FileHeader) error
 }

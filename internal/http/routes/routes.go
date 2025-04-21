@@ -4,7 +4,7 @@ import (
 	"finhub-go/internal/core/ports/outbound/messagebus"
 	"finhub-go/internal/core/ports/outbound/repository"
 	"finhub-go/internal/core/service"
-	"finhub-go/internal/core/service/importer"
+	"finhub-go/internal/core/service/upload"
 	"finhub-go/internal/http/handler"
 	"finhub-go/internal/http/middlewares"
 	"finhub-go/internal/utils/logger"
@@ -37,8 +37,9 @@ func (r *Router) Setup(enableDebug bool) *gin.Engine {
 	v1 := engine.Group("/api/v1")
 
 	v1.Use(middlewares.ErrorMiddleware(r.log))
-	v1.Use(middlewares.CORSMiddleware())
-	v1.Use(middlewares.UUIDMiddleware(r.log))
+	// v1.Use(middlewares.CORSMiddleware())
+	// TODO: rever esse middlewere aqui
+	// v1.Use(middlewares.UUIDMiddleware(r.log))
 
 	engine.StaticFile("/favicon.ico", "./static/favicon.ico")
 	registerDocsRoutes(engine.Group("/docs/v1"))
@@ -59,9 +60,9 @@ func (r *Router) Setup(enableDebug bool) *gin.Engine {
 	paymentStatusHandler := handler.NewPaymentStatusHandler(paymentStatusService)
 	registerPaymentStatusRoutes(v1.Group("/payment_status"), paymentStatusHandler)
 
-	importerService := importer.NewImporterService(r.mbus)
-	importerHander := handler.NewImporterHandler(importerService)
-	registerImporterRoutes(v1.Group("/importer"), importerHander)
+	uploadService := upload.NewUploadService(r.mbus)
+	uploadHander := handler.NewUploadHandler(uploadService)
+	registerUploadRoutes(v1.Group("/upload"), uploadHander)
 
 	return engine
 }
@@ -116,6 +117,6 @@ func registerPaymentStatusRoutes(router *gin.RouterGroup, handler *handler.Payme
 	router.DELETE("/:id", handler.DeletePaymentStatusHandler)
 }
 
-func registerImporterRoutes(router *gin.RouterGroup, handler *handler.ImporterHandler) {
+func registerUploadRoutes(router *gin.RouterGroup, handler *handler.UploadHandler) {
 	router.POST("", handler.ProcessFileHandler)
 }

@@ -62,7 +62,7 @@ func startSeed() {
 	}
 
 	if cfg.SeedPath != "" {
-		if err := seedDebts(ctx, postgresRepo, log, cfg.SeedPath+"debts.json"); err != nil {
+		if err := seedDebts(ctx, postgresRepo, log, cfg.SeedPath); err != nil {
 			log.Fatal("Error aseeding debts: %v", err)
 		}
 	}

@@ -53,14 +53,14 @@ func (r *InvoiceRequest) ToDomain() (*domain.Invoice, error) {
 		}
 	}
 
-	dueDate, err := utils.ToDate(r.DueDate)
+	dueDate, err := utils.ToDateTime(r.DueDate)
 	if err != nil {
 		return nil, errors.InvalidParam("due_date", err)
 	}
 
 	var issueDate *time.Time
 	if r.IssueDate != nil {
-		issueDate, err = utils.ToNillableDate(*r.IssueDate)
+		issueDate, err = utils.ToNillableDateTime(*r.IssueDate)
 		if err != nil {
 			return nil, errors.InvalidParam("issue_date", err)
 		}

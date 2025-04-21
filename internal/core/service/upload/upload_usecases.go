@@ -1,17 +1,19 @@
-package importer
+package upload
 
 import (
 	"encoding/json"
 	"finhub-go/internal/config"
 	"finhub-go/internal/core/dto"
+	"finhub-go/internal/core/errors"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 )
 
-func (s *importerService) processDebts(model, action, filename string, rows [][]string, idx map[string]int) error {
+func (s *uploadService) processDebts(model, action, filename string, rows [][]string, idx map[string]int) error {
 	jobID := uuid.New().String()
 
 	baseName := strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
@@ -85,11 +87,17 @@ func buildDebtRequest(model, dueDate string, row []string, idx map[string]int) (
 }
 
 func nubankToDebtRequest(dueDate string, row []string, idx map[string]int) (*dto.DebtRequest, error) {
+
+	amount, err := strconv.ParseFloat(getValue(row, idx, "amount"), 64)
+	if err != nil {
+		return nil, errors.InvalidParam("amount", err)
+	}
+
 	return &dto.DebtRequest{
 		DueDate:      &dueDate,
 		PurchaseDate: getValue(row, idx, "date"),
 		Title:        getValue(row, idx, "title"),
-		Amount:       getValue(row, idx, "amount"),
+		Amount:       amount,
 	}, nil
 }
 

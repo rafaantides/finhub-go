@@ -77,9 +77,12 @@ func (d *PostgreSQL) CreateDebt(ctx context.Context, input domain.Debt) (*dto.De
 	return newDebtResponse(row)
 }
 
-func (d *PostgreSQL) UpdateDebt(ctx context.Context, input domain.Debt) (*dto.DebtResponse, error) {
+func (d *PostgreSQL) UpdateDebt(ctx context.Context, id uuid.UUID, input domain.Debt) (*dto.DebtResponse, error) {
+	d.log.Info("id: %s", id)
+	d.log.Info("input: %v", input)
+	// TODO: rever o uso do inputID
 	updated, err := d.Client.Debt.
-		UpdateOneID(input.ID).
+		UpdateOneID(id).
 		SetTitle(input.Title).
 		SetAmount(input.Amount).
 		SetNillableDueDate(input.DueDate).

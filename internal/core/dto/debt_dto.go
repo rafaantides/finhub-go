@@ -4,7 +4,6 @@ import (
 	"finhub-go/internal/core/domain"
 	"finhub-go/internal/core/errors"
 	"finhub-go/internal/utils"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +14,7 @@ type DebtRequest struct {
 	PurchaseDate string  `json:"purchase_date"`
 	DueDate      *string `json:"due_date"`
 	Title        string  `json:"title"`
-	Amount       string  `json:"amount"`
+	Amount       float64 `json:"amount"`
 	StatusID     *string `json:"status_id"`
 	CategoryID   *string `json:"category_id"`
 }
@@ -60,23 +59,23 @@ type DebtInvoiceResponse struct {
 }
 
 func (r *DebtRequest) ToDomain() (*domain.Debt, error) {
-	purchaseDate, err := utils.ToDate(r.PurchaseDate)
+	purchaseDate, err := utils.ToDateTime(r.PurchaseDate)
 	if err != nil {
 		return nil, errors.InvalidParam("purchase_date", err)
 	}
 
 	var dueDate *time.Time
 	if r.DueDate != nil {
-		dueDate, err = utils.ToNillableDate(*r.DueDate)
+		dueDate, err = utils.ToNillableDateTime(*r.DueDate)
 		if err != nil {
 			return nil, errors.InvalidParam("due_date", err)
 		}
 	}
-
-	amount, err := strconv.ParseFloat(r.Amount, 64)
-	if err != nil {
-		return nil, errors.InvalidParam("amount", err)
-	}
+	// TODO: rever aqui
+	// amount, err := strconv.ParseFloat(r.Amount, 64)
+	// if err != nil {
+	// 	return nil, errors.InvalidParam("amount", err)
+	// }
 
 	var invoiceID *uuid.UUID
 	if r.InvoiceID != nil {
@@ -107,7 +106,7 @@ func (r *DebtRequest) ToDomain() (*domain.Debt, error) {
 		categoryID,
 		statusID,
 		r.Title,
-		amount,
+		r.Amount,
 		purchaseDate,
 		dueDate,
 	)
