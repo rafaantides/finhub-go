@@ -48,3 +48,21 @@ func (s *invoiceService) ListInvoices(ctx context.Context, flt dto.InvoiceFilter
 
 	return data, total, nil
 }
+
+func (s *invoiceService) ListInvoiceDebts(ctx context.Context, id uuid.UUID, flt dto.DebtFilters, pgn *pagination.Pagination) ([]dto.DebtResponse, int, error) {
+
+	flt.InvoiceID = &[]string{id.String()}
+
+	data, err := s.repo.ListDebts(ctx, flt, pgn)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := s.repo.CountDebts(ctx, flt, pgn)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return data, total, nil
+
+}

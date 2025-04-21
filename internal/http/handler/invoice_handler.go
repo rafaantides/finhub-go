@@ -155,3 +155,55 @@ func (h *InvoiceHandler) DeleteInvoiceHandler(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+func (h *InvoiceHandler) ListInvoiceDebtsHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	id, err := utils.ToUUID(c.Param("id"))
+	if err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+	var flt dto.DebtFilters
+	if err := c.ShouldBindQuery(&flt); err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+
+	pgn, err := pagination.NewPagination(c)
+
+	if err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+
+	validColumns := map[string]bool{
+		"id":            true,
+		"invoice":       true,
+		"title":         true,
+		"category_id":   true,
+		"category":      true,
+		"amount":        true,
+		"purchase_date": true,
+		"due_date":      true,
+		"status_id":     true,
+		"status":        true,
+		"created_at":    true,
+		"updated_at":    true,
+	}
+
+	if err := pgn.ValidateOrderBy("purchase_date", config.OrderAsc, validColumns); err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+
+	response, total, err := h.service.ListInvoiceDebts(ctx, id, flt, pgn)
+
+	if err != nil {
+		c.Error(appError.NewAppError(http.StatusInternalServerError, err))
+		return
+	}
+
+	pgn.SetPaginationHeaders(c, total)
+
+	c.JSON(http.StatusOK, response)
+}

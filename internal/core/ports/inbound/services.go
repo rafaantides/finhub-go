@@ -32,6 +32,7 @@ type InvoiceService interface {
 	UpdateInvoice(ctx context.Context, id uuid.UUID, input domain.Invoice) (*dto.InvoiceResponse, error)
 	DeleteInvoiceByID(ctx context.Context, id uuid.UUID) error
 	ListInvoices(ctx context.Context, flt dto.InvoiceFilters, pgn *pagination.Pagination) ([]dto.InvoiceResponse, int, error)
+	ListInvoiceDebts(ctx context.Context, id uuid.UUID, flt dto.DebtFilters, pgn *pagination.Pagination) ([]dto.DebtResponse, int, error)
 }
 
 type PaymentStatusService interface {
