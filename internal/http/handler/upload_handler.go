@@ -2,6 +2,7 @@ package handler
 
 import (
 	"finhub-go/internal/core/ports/inbound"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,4 +34,6 @@ func (h *UploadHandler) ProcessFileHandler(c *gin.Context) {
 	defer file.Close()
 
 	h.service.ImportFile(resource, model, action, file, fileHeader)
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "Arquivo recebido, processamento em andamento"})
 }

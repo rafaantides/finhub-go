@@ -88,6 +88,7 @@ func (h *InvoiceHandler) ListInvoicesHandler(c *gin.Context) {
 		"issue_date": true,
 		"due_date":   true,
 		"status_id":  true,
+		"status":     true,
 		"created_at": true,
 		"updated_at": true,
 	}

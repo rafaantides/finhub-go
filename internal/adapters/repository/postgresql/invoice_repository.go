@@ -7,11 +7,13 @@ import (
 	"finhub-go/internal/core/dto"
 	"finhub-go/internal/core/errors"
 	"finhub-go/internal/ent"
+	"finhub-go/internal/ent/debt"
 	"finhub-go/internal/ent/invoice"
 	"finhub-go/internal/ent/paymentstatus"
 	"finhub-go/internal/utils"
 	"finhub-go/internal/utils/pagination"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -101,13 +103,7 @@ func (d *PostgreSQL) ListInvoices(ctx context.Context, flt dto.InvoiceFilters, p
 	query := d.Client.Invoice.Query().WithStatus()
 
 	query = applyInvoiceFilters(query, flt, pgn)
-
-	if pgn.OrderDirection == config.OrderAsc {
-		query = query.Order(ent.Asc(pgn.OrderBy))
-	} else {
-		query = query.Order(ent.Desc(pgn.OrderBy))
-	}
-
+	query = apllyInvoiceOrderBy(query, pgn)
 	query = query.Limit(pgn.PageSize).Offset(pgn.Offset())
 
 	data, err := query.All(ctx)
@@ -165,6 +161,38 @@ func newInvoiceResponseList(rows []*ent.Invoice) ([]dto.InvoiceResponse, error) 
 		response = append(response, mapInvoiceToResponse(row))
 	}
 	return response, nil
+}
+
+func apllyInvoiceOrderBy(query *ent.InvoiceQuery, pgn *pagination.Pagination) *ent.InvoiceQuery {
+
+	var orderDirection sql.OrderTermOption
+	if pgn.OrderDirection == config.OrderAsc {
+		orderDirection = sql.OrderAsc()
+	} else {
+		orderDirection = sql.OrderDesc()
+	}
+
+	switch pgn.OrderBy {
+	case "status":
+		query.Order(
+			invoice.ByStatusField(paymentstatus.FieldName, orderDirection),
+			invoice.ByID(sql.OrderAsc()),
+		)
+	default:
+		if pgn.OrderDirection == config.OrderAsc {
+			query = query.Order(
+				ent.Asc(pgn.OrderBy),
+				ent.Asc(debt.FieldID),
+			)
+		} else {
+			query = query.Order(
+				ent.Desc(pgn.OrderBy),
+				ent.Asc(debt.FieldID),
+			)
+		}
+	}
+
+	return query
 }
 
 func applyInvoiceFilters(query *ent.InvoiceQuery, flt dto.InvoiceFilters, pgn *pagination.Pagination) *ent.InvoiceQuery {

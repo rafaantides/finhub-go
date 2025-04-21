@@ -2,6 +2,7 @@ package utils
 
 import (
 	"finhub-go/internal/core/errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,16 +47,24 @@ func ToNillableUUID(str string) (*uuid.UUID, error) {
 func ToDateTime(dateStr string) (time.Time, error) {
 	if dateStr == "" {
 		return time.Time{}, errors.ErrEmptyField
+	}
 
+	formats := []string{
+		time.RFC3339,
+		"2006-01-02",
 	}
-	t, err := time.Parse(time.RFC3339, dateStr)
-	if err != nil {
-		return time.Time{}, err
+
+	for _, format := range formats {
+		if t, err := time.Parse(format, dateStr); err == nil {
+			return t, nil
+		}
 	}
-	return t, nil
+
+	// TODO: usar um error mais padrao
+	return time.Time{}, fmt.Errorf("formato de data inválido: %s", dateStr)
 }
 
-// TODO: rever as funçoes para usar ponteiro
+// TODO: rever as funçoes para usar ponteiro e formato q ela usa, depois de fazer o front sugiu mudanças
 func ToDateUnsafe(dateStr *string) *time.Time {
 	if dateStr == nil || *dateStr == "" {
 		return nil
@@ -71,11 +80,18 @@ func ToNillableDateTime(dateStr string) (*time.Time, error) {
 	if dateStr == "" {
 		return nil, nil
 	}
-	t, err := time.Parse(time.RFC3339, dateStr)
-	if err != nil {
-		return nil, err
+	formats := []string{
+		time.RFC3339,
+		"2006-01-02",
 	}
-	return &t, nil
+
+	for _, format := range formats {
+		if t, err := time.Parse(format, dateStr); err == nil {
+			return &t, nil
+		}
+	}
+	// TODO: usar um error mais padrao
+	return nil, fmt.Errorf("formato de data inválido: %s", dateStr)
 }
 
 func ToDateTimeString(date time.Time) string {
