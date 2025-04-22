@@ -91,6 +91,7 @@ func registerDebtRoutes(router *gin.RouterGroup, handler *handler.DebtHandler) {
 	router.GET("/:id", handler.GetDebtByIDHandler)
 	router.PUT("/:id", handler.UpdateDebtHandler)
 	router.DELETE("/:id", handler.DeleteDebtHandler)
+	router.GET("/summary", handler.DebtsSummaryHandler)
 }
 
 func registerInvoiceRoutes(router *gin.RouterGroup, handler *handler.InvoiceHandler) {

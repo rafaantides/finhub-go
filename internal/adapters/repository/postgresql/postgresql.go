@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	stdsql "database/sql"
 	"finhub-go/internal/adapters/repository/postgresql/hooks"
 	"finhub-go/internal/core/ports/outbound/repository"
 	"finhub-go/internal/ent"
@@ -9,13 +10,14 @@ import (
 	"net/url"
 
 	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
+	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/lib/pq"
 )
 
 type PostgreSQL struct {
 	log    *logger.Logger
 	Client *ent.Client
+	db     *stdsql.DB
 }
 
 func NewPostgreSQL(user, password, host, port, database, SeedPath string) (repository.Repository, error) {
@@ -30,7 +32,7 @@ func NewPostgreSQL(user, password, host, port, database, SeedPath string) (repos
 		database,
 	)
 
-	drv, err := sql.Open(dialect.Postgres, dbURI)
+	drv, err := entsql.Open(dialect.Postgres, dbURI)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +61,7 @@ func NewPostgreSQL(user, password, host, port, database, SeedPath string) (repos
 
 	log.Start("Host: %s:%s | User: %s | DB: %s", host, port, user, database)
 
-	return &PostgreSQL{Client: client, log: log}, nil
+	return &PostgreSQL{Client: client, log: log, db: sqlDB}, nil
 }
 
 func (d *PostgreSQL) Close() {

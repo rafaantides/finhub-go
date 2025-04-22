@@ -159,3 +159,21 @@ func (h *DebtHandler) DeleteDebtHandler(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+func (h *DebtHandler) DebtsSummaryHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	var flt dto.ChartFilters
+	if err := c.ShouldBindQuery(&flt); err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+
+	response, err := h.service.DebtsSummary(ctx, flt)
+
+	if err != nil {
+		c.Error(appError.NewAppError(http.StatusInternalServerError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

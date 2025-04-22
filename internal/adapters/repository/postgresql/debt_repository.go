@@ -11,6 +11,9 @@ import (
 	"finhub-go/internal/ent/invoice"
 	"finhub-go/internal/ent/paymentstatus"
 	"finhub-go/internal/utils"
+	"fmt"
+	"sort"
+	"time"
 
 	"context"
 	"finhub-go/internal/utils/pagination"
@@ -140,6 +143,137 @@ func (d *PostgreSQL) CountDebts(ctx context.Context, flt dto.DebtFilters, pgn *p
 		return 0, err
 	}
 	return total, nil
+}
+
+func (d *PostgreSQL) DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]dto.SummaryByDate, error) {
+	var periodTrunc string
+
+	switch flt.Period {
+	case "daily":
+		periodTrunc = "day"
+	case "weekly":
+		periodTrunc = "week"
+	case "monthly":
+		periodTrunc = "month"
+	case "year", "yearly":
+		periodTrunc = "year"
+	default:
+		return nil, fmt.Errorf("invalid period: %s", flt.Period)
+	}
+
+	startDate, err := utils.ToDateTime(flt.StartDate)
+	if err != nil {
+		return nil, err
+	}
+	endDate, err := utils.ToDateTime(flt.EndDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Buscar todas as categorias
+	var allCategories []string
+	catQuery := "SELECT name FROM categories"
+	catRows, err := d.db.QueryContext(ctx, catQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer catRows.Close()
+
+	for catRows.Next() {
+		var name string
+		if err := catRows.Scan(&name); err != nil {
+			return nil, err
+		}
+		allCategories = append(allCategories, name)
+	}
+
+	// Buscar os dados de débitos agrupados por data e categoria
+	query := `
+		SELECT 
+			DATE_TRUNC($1, d.purchase_date) AS period,
+			c.name AS category,
+			SUM(d.amount) AS total,
+			COUNT(*) AS transactions
+		FROM debts d
+		JOIN categories c ON d.category_id = c.id
+		WHERE d.purchase_date BETWEEN $2 AND $3
+		GROUP BY period, category
+		ORDER BY period
+	`
+
+	rows, err := d.db.QueryContext(ctx, query, periodTrunc, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	type rawData struct {
+		date         string
+		category     string
+		total        float64
+		transactions int
+	}
+
+	dataByDate := map[string][]rawData{}
+
+	for rows.Next() {
+		var date time.Time
+		var category string
+		var total float64
+		var transactions int
+
+		if err := rows.Scan(&date, &category, &total, &transactions); err != nil {
+			return nil, err
+		}
+
+		key := date.Format("2006-01-02")
+		dataByDate[key] = append(dataByDate[key], rawData{
+			date:         key,
+			category:     category,
+			total:        total,
+			transactions: transactions,
+		})
+	}
+
+	// Montar resposta final
+	var result []dto.SummaryByDate
+	for date, entries := range dataByDate {
+		summary := dto.SummaryByDate{
+			Date:       date,
+			Total:      0,
+			Categories: []dto.CategorySummary{},
+		}
+
+		catMap := map[string]rawData{}
+		for _, entry := range entries {
+			catMap[entry.category] = entry
+			summary.Total += entry.total
+		}
+
+		for _, category := range allCategories {
+			data, exists := catMap[category]
+			total := 0.0
+			transactions := 0
+			if exists {
+				total = data.total
+				transactions = data.transactions
+			}
+			summary.Categories = append(summary.Categories, dto.CategorySummary{
+				Category:     category,
+				Total:        total,
+				Transactions: transactions,
+			})
+		}
+
+		result = append(result, summary)
+	}
+
+	// Ordenar por data
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Date < result[j].Date
+	})
+
+	return result, nil
 }
 
 func mapDebtToResponse(row *ent.Debt) dto.DebtResponse {
