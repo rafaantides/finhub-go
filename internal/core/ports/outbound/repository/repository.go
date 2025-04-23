@@ -28,6 +28,7 @@ type Repository interface {
 	ListDebts(ctx context.Context, flt dto.DebtFilters, pgn *pagination.Pagination) ([]dto.DebtResponse, error)
 	CountDebts(ctx context.Context, flt dto.DebtFilters, pgn *pagination.Pagination) (int, error)
 	DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]dto.SummaryByDate, error)
+	DebtsGeneralStats(ctx context.Context, flt dto.ChartFilters) (*dto.DebtsStatsSummary, error)
 
 	GetInvoiceByID(ctx context.Context, id uuid.UUID) (*dto.InvoiceResponse, error)
 	CreateInvoice(ctx context.Context, input domain.Invoice) (*dto.InvoiceResponse, error)

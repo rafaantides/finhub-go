@@ -27,3 +27,10 @@ type SummaryByDate struct {
 	Total      float64           `json:"total"`
 	Categories []CategorySummary `json:"categories"`
 }
+
+type DebtsStatsSummary struct {
+	TotalAmount           float64 `json:"total_amount"`
+	TotalTransactions     int     `json:"total_transactions"`
+	UniqueEstablishments  int     `json:"unique_establishments"`
+	AveragePerTransaction float64 `json:"average_per_transaction"`
+}

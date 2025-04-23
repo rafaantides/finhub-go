@@ -145,6 +145,47 @@ func (d *PostgreSQL) CountDebts(ctx context.Context, flt dto.DebtFilters, pgn *p
 	return total, nil
 }
 
+func (d *PostgreSQL) DebtsGeneralStats(ctx context.Context, flt dto.ChartFilters) (*dto.DebtsStatsSummary, error) {
+	startDate, err := utils.ToDateTime(flt.StartDate)
+	if err != nil {
+		return nil, err
+	}
+	endDate, err := utils.ToDateTime(flt.EndDate)
+	if err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT
+			COALESCE(SUM(d.amount), 0) AS total_amount,
+			COUNT(*) AS total_transactions,
+			COUNT(DISTINCT d.title) AS unique_establishments
+		FROM debts d
+		WHERE d.purchase_date BETWEEN $1 AND $2
+	`
+
+	var totalAmount float64
+	var totalTransactions int
+	var uniqueEstablishments int
+
+	err = d.db.QueryRowContext(ctx, query, startDate, endDate).Scan(&totalAmount, &totalTransactions, &uniqueEstablishments)
+	if err != nil {
+		return nil, err
+	}
+
+	var averagePerTransaction float64
+	if totalTransactions > 0 {
+		averagePerTransaction = totalAmount / float64(totalTransactions)
+	}
+
+	return &dto.DebtsStatsSummary{
+		TotalAmount:           totalAmount,
+		TotalTransactions:     totalTransactions,
+		UniqueEstablishments:  uniqueEstablishments,
+		AveragePerTransaction: averagePerTransaction,
+	}, nil
+}
+
 func (d *PostgreSQL) DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]dto.SummaryByDate, error) {
 	var periodTrunc string
 

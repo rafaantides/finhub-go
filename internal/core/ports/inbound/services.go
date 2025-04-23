@@ -25,6 +25,7 @@ type DebtService interface {
 	DeleteDebtByID(ctx context.Context, id uuid.UUID) error
 	ListDebts(ctx context.Context, flt dto.DebtFilters, pgn *pagination.Pagination) ([]dto.DebtResponse, int, error)
 	DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]dto.SummaryByDate, error)
+	DebtsGeneralStats(ctx context.Context, flt dto.ChartFilters) (*dto.DebtsStatsSummary, error)
 }
 
 type InvoiceService interface {

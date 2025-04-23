@@ -23,6 +23,8 @@ const (
 	OrderDesc = "desc"
 )
 
+const DefaultCategory = "Outros"
+
 type Config struct {
 	DBUser string
 	DBPass string

@@ -177,3 +177,21 @@ func (h *DebtHandler) DebtsSummaryHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *DebtHandler) DebtsGeneralStatsHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	var flt dto.ChartFilters
+	if err := c.ShouldBindQuery(&flt); err != nil {
+		c.Error(appError.NewAppError(http.StatusBadRequest, err))
+		return
+	}
+
+	response, err := h.service.DebtsGeneralStats(ctx, flt)
+
+	if err != nil {
+		c.Error(appError.NewAppError(http.StatusInternalServerError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

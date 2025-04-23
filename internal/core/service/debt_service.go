@@ -58,3 +58,7 @@ func (s *debtService) ListDebts(ctx context.Context, flt dto.DebtFilters, pgn *p
 func (s *debtService) DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]dto.SummaryByDate, error) {
 	return s.repo.DebtsSummary(ctx, flt)
 }
+
+func (s *debtService) DebtsGeneralStats(ctx context.Context, flt dto.ChartFilters) (*dto.DebtsStatsSummary, error) {
+	return s.repo.DebtsGeneralStats(ctx, flt)
+}

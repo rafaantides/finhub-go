@@ -2,6 +2,7 @@ package hooks
 
 import (
 	"encoding/json"
+	"finhub-go/internal/config"
 	"os"
 	"regexp"
 	"strings"
@@ -12,7 +13,7 @@ type Categorizer struct {
 }
 
 func NewCategorizer(path string) (*Categorizer, error) {
-	categoryMap, err := loadCategoriesFromFile(path+"categories.json")
+	categoryMap, err := loadCategoriesFromFile(path + "categories.json")
 	if err != nil {
 		return nil, err
 	}
@@ -21,15 +22,15 @@ func NewCategorizer(path string) (*Categorizer, error) {
 	}, nil
 }
 
-func (c *Categorizer) Categorize(name string) *string {
+func (c *Categorizer) Categorize(name string) string {
 	// Remove sucixo do tipo " - Parcela 2/3"
 	parcelaRegex := regexp.MustCompile(`(?i)\s*-\s*Parcela\s+\d+/\d+$`)
 	cleanName := strings.TrimSpace(parcelaRegex.ReplaceAllString(name, ""))
 
 	if category, exists := c.categoryMap[cleanName]; exists {
-		return &category
+		return category
 	}
-	return nil
+	return config.DefaultCategory
 }
 
 func loadCategoriesFromFile(path string) (map[string]string, error) {
