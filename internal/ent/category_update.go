@@ -68,6 +68,20 @@ func (cu *CategoryUpdate) ClearDescription() *CategoryUpdate {
 	return cu
 }
 
+// SetColor sets the "color" field.
+func (cu *CategoryUpdate) SetColor(s string) *CategoryUpdate {
+	cu.mutation.SetColor(s)
+	return cu
+}
+
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (cu *CategoryUpdate) SetNillableColor(s *string) *CategoryUpdate {
+	if s != nil {
+		cu.SetColor(*s)
+	}
+	return cu
+}
+
 // Mutation returns the CategoryMutation object of the builder.
 func (cu *CategoryUpdate) Mutation() *CategoryMutation {
 	return cu.mutation
@@ -116,6 +130,11 @@ func (cu *CategoryUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Category.name": %w`, err)}
 		}
 	}
+	if v, ok := cu.mutation.Color(); ok {
+		if err := category.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf(`ent: validator failed for field "Category.color": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -142,6 +161,9 @@ func (cu *CategoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.DescriptionCleared() {
 		_spec.ClearField(category.FieldDescription, field.TypeString)
+	}
+	if value, ok := cu.mutation.Color(); ok {
+		_spec.SetField(category.FieldColor, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -200,6 +222,20 @@ func (cuo *CategoryUpdateOne) SetNillableDescription(s *string) *CategoryUpdateO
 // ClearDescription clears the value of the "description" field.
 func (cuo *CategoryUpdateOne) ClearDescription() *CategoryUpdateOne {
 	cuo.mutation.ClearDescription()
+	return cuo
+}
+
+// SetColor sets the "color" field.
+func (cuo *CategoryUpdateOne) SetColor(s string) *CategoryUpdateOne {
+	cuo.mutation.SetColor(s)
+	return cuo
+}
+
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (cuo *CategoryUpdateOne) SetNillableColor(s *string) *CategoryUpdateOne {
+	if s != nil {
+		cuo.SetColor(*s)
+	}
 	return cuo
 }
 
@@ -264,6 +300,11 @@ func (cuo *CategoryUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Category.name": %w`, err)}
 		}
 	}
+	if v, ok := cuo.mutation.Color(); ok {
+		if err := category.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf(`ent: validator failed for field "Category.color": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -307,6 +348,9 @@ func (cuo *CategoryUpdateOne) sqlSave(ctx context.Context) (_node *Category, err
 	}
 	if cuo.mutation.DescriptionCleared() {
 		_spec.ClearField(category.FieldDescription, field.TypeString)
+	}
+	if value, ok := cuo.mutation.Color(); ok {
+		_spec.SetField(category.FieldColor, field.TypeString, value)
 	}
 	_node = &Category{config: cuo.config}
 	_spec.Assign = _node.assignValues

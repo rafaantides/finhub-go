@@ -44,6 +44,7 @@ type CategoryMutation struct {
 	updated_at    *time.Time
 	name          *string
 	description   *string
+	color         *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Category, error)
@@ -311,6 +312,42 @@ func (m *CategoryMutation) ResetDescription() {
 	delete(m.clearedFields, category.FieldDescription)
 }
 
+// SetColor sets the "color" field.
+func (m *CategoryMutation) SetColor(s string) {
+	m.color = &s
+}
+
+// Color returns the value of the "color" field in the mutation.
+func (m *CategoryMutation) Color() (r string, exists bool) {
+	v := m.color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColor returns the old "color" field's value of the Category entity.
+// If the Category object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CategoryMutation) OldColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColor: %w", err)
+	}
+	return oldValue.Color, nil
+}
+
+// ResetColor resets all changes to the "color" field.
+func (m *CategoryMutation) ResetColor() {
+	m.color = nil
+}
+
 // Where appends a list predicates to the CategoryMutation builder.
 func (m *CategoryMutation) Where(ps ...predicate.Category) {
 	m.predicates = append(m.predicates, ps...)
@@ -345,7 +382,7 @@ func (m *CategoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CategoryMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.created_at != nil {
 		fields = append(fields, category.FieldCreatedAt)
 	}
@@ -357,6 +394,9 @@ func (m *CategoryMutation) Fields() []string {
 	}
 	if m.description != nil {
 		fields = append(fields, category.FieldDescription)
+	}
+	if m.color != nil {
+		fields = append(fields, category.FieldColor)
 	}
 	return fields
 }
@@ -374,6 +414,8 @@ func (m *CategoryMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case category.FieldDescription:
 		return m.Description()
+	case category.FieldColor:
+		return m.Color()
 	}
 	return nil, false
 }
@@ -391,6 +433,8 @@ func (m *CategoryMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldName(ctx)
 	case category.FieldDescription:
 		return m.OldDescription(ctx)
+	case category.FieldColor:
+		return m.OldColor(ctx)
 	}
 	return nil, fmt.Errorf("unknown Category field %s", name)
 }
@@ -427,6 +471,13 @@ func (m *CategoryMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case category.FieldColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColor(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Category field %s", name)
@@ -497,6 +548,9 @@ func (m *CategoryMutation) ResetField(name string) error {
 		return nil
 	case category.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case category.FieldColor:
+		m.ResetColor()
 		return nil
 	}
 	return fmt.Errorf("unknown Category field %s", name)
@@ -1411,6 +1465,9 @@ type InvoiceMutation struct {
 	clearedFields map[string]struct{}
 	status        *uuid.UUID
 	clearedstatus bool
+	debts         map[uuid.UUID]struct{}
+	removeddebts  map[uuid.UUID]struct{}
+	cleareddebts  bool
 	done          bool
 	oldValue      func(context.Context) (*Invoice, error)
 	predicates    []predicate.Invoice
@@ -1808,6 +1865,60 @@ func (m *InvoiceMutation) ResetStatus() {
 	m.clearedstatus = false
 }
 
+// AddDebtIDs adds the "debts" edge to the Debt entity by ids.
+func (m *InvoiceMutation) AddDebtIDs(ids ...uuid.UUID) {
+	if m.debts == nil {
+		m.debts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.debts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDebts clears the "debts" edge to the Debt entity.
+func (m *InvoiceMutation) ClearDebts() {
+	m.cleareddebts = true
+}
+
+// DebtsCleared reports if the "debts" edge to the Debt entity was cleared.
+func (m *InvoiceMutation) DebtsCleared() bool {
+	return m.cleareddebts
+}
+
+// RemoveDebtIDs removes the "debts" edge to the Debt entity by IDs.
+func (m *InvoiceMutation) RemoveDebtIDs(ids ...uuid.UUID) {
+	if m.removeddebts == nil {
+		m.removeddebts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.debts, ids[i])
+		m.removeddebts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDebts returns the removed IDs of the "debts" edge to the Debt entity.
+func (m *InvoiceMutation) RemovedDebtsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddebts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DebtsIDs returns the "debts" edge IDs in the mutation.
+func (m *InvoiceMutation) DebtsIDs() (ids []uuid.UUID) {
+	for id := range m.debts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDebts resets all changes to the "debts" edge.
+func (m *InvoiceMutation) ResetDebts() {
+	m.debts = nil
+	m.cleareddebts = false
+	m.removeddebts = nil
+}
+
 // Where appends a list predicates to the InvoiceMutation builder.
 func (m *InvoiceMutation) Where(ps ...predicate.Invoice) {
 	m.predicates = append(m.predicates, ps...)
@@ -2050,9 +2161,12 @@ func (m *InvoiceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InvoiceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.status != nil {
 		edges = append(edges, invoice.EdgeStatus)
+	}
+	if m.debts != nil {
+		edges = append(edges, invoice.EdgeDebts)
 	}
 	return edges
 }
@@ -2065,27 +2179,47 @@ func (m *InvoiceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.status; id != nil {
 			return []ent.Value{*id}
 		}
+	case invoice.EdgeDebts:
+		ids := make([]ent.Value, 0, len(m.debts))
+		for id := range m.debts {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvoiceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removeddebts != nil {
+		edges = append(edges, invoice.EdgeDebts)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *InvoiceMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case invoice.EdgeDebts:
+		ids := make([]ent.Value, 0, len(m.removeddebts))
+		for id := range m.removeddebts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InvoiceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedstatus {
 		edges = append(edges, invoice.EdgeStatus)
+	}
+	if m.cleareddebts {
+		edges = append(edges, invoice.EdgeDebts)
 	}
 	return edges
 }
@@ -2096,6 +2230,8 @@ func (m *InvoiceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case invoice.EdgeStatus:
 		return m.clearedstatus
+	case invoice.EdgeDebts:
+		return m.cleareddebts
 	}
 	return false
 }
@@ -2117,6 +2253,9 @@ func (m *InvoiceMutation) ResetEdge(name string) error {
 	switch name {
 	case invoice.EdgeStatus:
 		m.ResetStatus()
+		return nil
+	case invoice.EdgeDebts:
+		m.ResetDebts()
 		return nil
 	}
 	return fmt.Errorf("unknown Invoice edge %s", name)

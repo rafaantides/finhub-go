@@ -15,6 +15,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "color", Type: field.TypeString, Size: 7},
 	}
 	// CategoriesTable holds the schema information for the "categories" table.
 	CategoriesTable = &schema.Table{
@@ -45,7 +46,7 @@ var (
 				Symbol:     "debts_invoices_invoice",
 				Columns:    []*schema.Column{DebtsColumns[7]},
 				RefColumns: []*schema.Column{InvoicesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "debts_categories_category",

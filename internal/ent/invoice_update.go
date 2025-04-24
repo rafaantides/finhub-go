@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"errors"
+	"finhub-go/internal/ent/debt"
 	"finhub-go/internal/ent/invoice"
 	"finhub-go/internal/ent/paymentstatus"
 	"finhub-go/internal/ent/predicate"
@@ -124,6 +125,21 @@ func (iu *InvoiceUpdate) SetStatus(p *PaymentStatus) *InvoiceUpdate {
 	return iu.SetStatusID(p.ID)
 }
 
+// AddDebtIDs adds the "debts" edge to the Debt entity by IDs.
+func (iu *InvoiceUpdate) AddDebtIDs(ids ...uuid.UUID) *InvoiceUpdate {
+	iu.mutation.AddDebtIDs(ids...)
+	return iu
+}
+
+// AddDebts adds the "debts" edges to the Debt entity.
+func (iu *InvoiceUpdate) AddDebts(d ...*Debt) *InvoiceUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return iu.AddDebtIDs(ids...)
+}
+
 // Mutation returns the InvoiceMutation object of the builder.
 func (iu *InvoiceUpdate) Mutation() *InvoiceMutation {
 	return iu.mutation
@@ -133,6 +149,27 @@ func (iu *InvoiceUpdate) Mutation() *InvoiceMutation {
 func (iu *InvoiceUpdate) ClearStatus() *InvoiceUpdate {
 	iu.mutation.ClearStatus()
 	return iu
+}
+
+// ClearDebts clears all "debts" edges to the Debt entity.
+func (iu *InvoiceUpdate) ClearDebts() *InvoiceUpdate {
+	iu.mutation.ClearDebts()
+	return iu
+}
+
+// RemoveDebtIDs removes the "debts" edge to Debt entities by IDs.
+func (iu *InvoiceUpdate) RemoveDebtIDs(ids ...uuid.UUID) *InvoiceUpdate {
+	iu.mutation.RemoveDebtIDs(ids...)
+	return iu
+}
+
+// RemoveDebts removes "debts" edges to Debt entities.
+func (iu *InvoiceUpdate) RemoveDebts(d ...*Debt) *InvoiceUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return iu.RemoveDebtIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -236,6 +273,51 @@ func (iu *InvoiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(paymentstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.DebtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedDebtsIDs(); len(nodes) > 0 && !iu.mutation.DebtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.DebtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -357,6 +439,21 @@ func (iuo *InvoiceUpdateOne) SetStatus(p *PaymentStatus) *InvoiceUpdateOne {
 	return iuo.SetStatusID(p.ID)
 }
 
+// AddDebtIDs adds the "debts" edge to the Debt entity by IDs.
+func (iuo *InvoiceUpdateOne) AddDebtIDs(ids ...uuid.UUID) *InvoiceUpdateOne {
+	iuo.mutation.AddDebtIDs(ids...)
+	return iuo
+}
+
+// AddDebts adds the "debts" edges to the Debt entity.
+func (iuo *InvoiceUpdateOne) AddDebts(d ...*Debt) *InvoiceUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return iuo.AddDebtIDs(ids...)
+}
+
 // Mutation returns the InvoiceMutation object of the builder.
 func (iuo *InvoiceUpdateOne) Mutation() *InvoiceMutation {
 	return iuo.mutation
@@ -366,6 +463,27 @@ func (iuo *InvoiceUpdateOne) Mutation() *InvoiceMutation {
 func (iuo *InvoiceUpdateOne) ClearStatus() *InvoiceUpdateOne {
 	iuo.mutation.ClearStatus()
 	return iuo
+}
+
+// ClearDebts clears all "debts" edges to the Debt entity.
+func (iuo *InvoiceUpdateOne) ClearDebts() *InvoiceUpdateOne {
+	iuo.mutation.ClearDebts()
+	return iuo
+}
+
+// RemoveDebtIDs removes the "debts" edge to Debt entities by IDs.
+func (iuo *InvoiceUpdateOne) RemoveDebtIDs(ids ...uuid.UUID) *InvoiceUpdateOne {
+	iuo.mutation.RemoveDebtIDs(ids...)
+	return iuo
+}
+
+// RemoveDebts removes "debts" edges to Debt entities.
+func (iuo *InvoiceUpdateOne) RemoveDebts(d ...*Debt) *InvoiceUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return iuo.RemoveDebtIDs(ids...)
 }
 
 // Where appends a list predicates to the InvoiceUpdate builder.
@@ -499,6 +617,51 @@ func (iuo *InvoiceUpdateOne) sqlSave(ctx context.Context) (_node *Invoice, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(paymentstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.DebtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedDebtsIDs(); len(nodes) > 0 && !iuo.mutation.DebtsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.DebtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

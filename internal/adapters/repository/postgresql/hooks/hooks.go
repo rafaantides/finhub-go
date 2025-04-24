@@ -57,13 +57,17 @@ func SetCategoryFromTitleHook(client *ent.Client, categorizer *Categorizer) ent.
 
 			categoryName := categorizer.Categorize(title)
 
+			if categoryName == nil {
+				return next.Mutate(ctx, m) // nada a fazer se não tem categoria
+			}
+
 			// Busca a categoria no banco diretamente
 			data, err := client.Category.
 				Query().
-				Where(category.NameEQ(categoryName)).
+				Where(category.NameEQ(*categoryName)).
 				Only(ctx)
 			if err != nil {
-				return nil, fmt.Errorf("failed to find category '%s': %w", categoryName, err)
+				return nil, fmt.Errorf("failed to find category '%s': %w", *categoryName, err)
 			}
 
 			dm.SetCategoryID(data.ID)

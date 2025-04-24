@@ -31,5 +31,6 @@ func (Invoice) Fields() []ent.Field {
 func (Invoice) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("status", PaymentStatus.Type).Unique().StorageKey(edge.Column("status_id")),
+		edge.From("debts", Debt.Type).Ref("invoice"),
 	}
 }

@@ -22,5 +22,6 @@ func (Category) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").MaxLen(255),
 		field.String("description").Optional().Nillable(),
+		field.String("color").MaxLen(7),
 	}
 }

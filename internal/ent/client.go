@@ -667,6 +667,22 @@ func (c *InvoiceClient) QueryStatus(i *Invoice) *PaymentStatusQuery {
 	return query
 }
 
+// QueryDebts queries the debts edge of a Invoice.
+func (c *InvoiceClient) QueryDebts(i *Invoice) *DebtQuery {
+	query := (&DebtClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invoice.Table, invoice.FieldID, id),
+			sqlgraph.To(debt.Table, debt.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, invoice.DebtsTable, invoice.DebtsColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvoiceClient) Hooks() []Hook {
 	return c.hooks.Invoice

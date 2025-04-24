@@ -4,6 +4,8 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
+	"finhub-go/internal/ent/debt"
 	"finhub-go/internal/ent/invoice"
 	"finhub-go/internal/ent/paymentstatus"
 	"finhub-go/internal/ent/predicate"
@@ -25,6 +27,7 @@ type InvoiceQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Invoice
 	withStatus *PaymentStatusQuery
+	withDebts  *DebtQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -77,6 +80,28 @@ func (iq *InvoiceQuery) QueryStatus() *PaymentStatusQuery {
 			sqlgraph.From(invoice.Table, invoice.FieldID, selector),
 			sqlgraph.To(paymentstatus.Table, paymentstatus.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, invoice.StatusTable, invoice.StatusColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDebts chains the current query on the "debts" edge.
+func (iq *InvoiceQuery) QueryDebts() *DebtQuery {
+	query := (&DebtClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invoice.Table, invoice.FieldID, selector),
+			sqlgraph.To(debt.Table, debt.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, invoice.DebtsTable, invoice.DebtsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -277,6 +302,7 @@ func (iq *InvoiceQuery) Clone() *InvoiceQuery {
 		inters:     append([]Interceptor{}, iq.inters...),
 		predicates: append([]predicate.Invoice{}, iq.predicates...),
 		withStatus: iq.withStatus.Clone(),
+		withDebts:  iq.withDebts.Clone(),
 		// clone intermediate query.
 		sql:  iq.sql.Clone(),
 		path: iq.path,
@@ -291,6 +317,17 @@ func (iq *InvoiceQuery) WithStatus(opts ...func(*PaymentStatusQuery)) *InvoiceQu
 		opt(query)
 	}
 	iq.withStatus = query
+	return iq
+}
+
+// WithDebts tells the query-builder to eager-load the nodes that are connected to
+// the "debts" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *InvoiceQuery) WithDebts(opts ...func(*DebtQuery)) *InvoiceQuery {
+	query := (&DebtClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withDebts = query
 	return iq
 }
 
@@ -373,8 +410,9 @@ func (iq *InvoiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Invo
 		nodes       = []*Invoice{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			iq.withStatus != nil,
+			iq.withDebts != nil,
 		}
 	)
 	if iq.withStatus != nil {
@@ -404,6 +442,13 @@ func (iq *InvoiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Invo
 	if query := iq.withStatus; query != nil {
 		if err := iq.loadStatus(ctx, query, nodes, nil,
 			func(n *Invoice, e *PaymentStatus) { n.Edges.Status = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withDebts; query != nil {
+		if err := iq.loadDebts(ctx, query, nodes,
+			func(n *Invoice) { n.Edges.Debts = []*Debt{} },
+			func(n *Invoice, e *Debt) { n.Edges.Debts = append(n.Edges.Debts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -439,6 +484,37 @@ func (iq *InvoiceQuery) loadStatus(ctx context.Context, query *PaymentStatusQuer
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (iq *InvoiceQuery) loadDebts(ctx context.Context, query *DebtQuery, nodes []*Invoice, init func(*Invoice), assign func(*Invoice, *Debt)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Invoice)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Debt(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(invoice.DebtsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.invoice_id
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "invoice_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "invoice_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

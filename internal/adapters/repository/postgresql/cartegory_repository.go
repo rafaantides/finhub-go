@@ -21,7 +21,7 @@ func (r *PostgreSQL) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Ca
 		}
 		return nil, errors.FailedToFind("categories", err)
 	}
-	return dto.NewCategoryResponse(row.ID, row.Name, row.Description), nil
+	return dto.NewCategoryResponse(row.ID, row.Name, row.Description, &row.Color), nil
 }
 
 func (r *PostgreSQL) GetCategoryIDByName(ctx context.Context, name *string) (*uuid.UUID, error) {
@@ -52,7 +52,7 @@ func (r *PostgreSQL) CreateCategory(ctx context.Context, input domain.Category) 
 		return nil, errors.FailedToSave("categories", err)
 	}
 
-	return dto.NewCategoryResponse(row.ID, row.Name, row.Description), nil
+	return dto.NewCategoryResponse(row.ID, row.Name, row.Description, &row.Color), nil
 }
 
 func (r *PostgreSQL) UpdateCategory(ctx context.Context, input domain.Category) (*dto.CategoryResponse, error) {
@@ -69,7 +69,7 @@ func (r *PostgreSQL) UpdateCategory(ctx context.Context, input domain.Category) 
 		return nil, errors.FailedToUpdate("categories", err)
 	}
 
-	return dto.NewCategoryResponse(row.ID, row.Name, row.Description), nil
+	return dto.NewCategoryResponse(row.ID, row.Name, row.Description, &row.Color), nil
 }
 
 func (r *PostgreSQL) DeleteCategoryByID(ctx context.Context, id uuid.UUID) error {
@@ -102,7 +102,7 @@ func (r *PostgreSQL) ListCategories(ctx context.Context, pgn *pagination.Paginat
 
 	response := make([]dto.CategoryResponse, 0, len(rows))
 	for _, row := range rows {
-		response = append(response, *dto.NewCategoryResponse(row.ID, row.Name, row.Description))
+		response = append(response, *dto.NewCategoryResponse(row.ID, row.Name, row.Description, &row.Color))
 	}
 	return response, nil
 

@@ -10,11 +10,12 @@ type Category struct {
 	ID          uuid.UUID
 	Name        string
 	Description *string
+	Color       *string
 	CreatedAt   string
 	UpdatedAt   string
 }
 
-func NewCategory(name string, description *string) (*Category, error) {
+func NewCategory(name string, description, color *string) (*Category, error) {
 
 	if name == "" {
 		return nil, errors.EmptyField("name")
@@ -23,5 +24,6 @@ func NewCategory(name string, description *string) (*Category, error) {
 	return &Category{
 		Name:        name,
 		Description: description,
+		Color:       color,
 	}, nil
 }

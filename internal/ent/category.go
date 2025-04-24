@@ -25,7 +25,9 @@ type Category struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description  *string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
+	// Color holds the value of the "color" field.
+	Color        string `json:"color,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -34,7 +36,7 @@ func (*Category) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case category.FieldName, category.FieldDescription:
+		case category.FieldName, category.FieldDescription, category.FieldColor:
 			values[i] = new(sql.NullString)
 		case category.FieldCreatedAt, category.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -86,6 +88,12 @@ func (c *Category) assignValues(columns []string, values []any) error {
 				c.Description = new(string)
 				*c.Description = value.String
 			}
+		case category.FieldColor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field color", values[i])
+			} else if value.Valid {
+				c.Color = value.String
+			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
 		}
@@ -135,6 +143,9 @@ func (c *Category) String() string {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("color=")
+	builder.WriteString(c.Color)
 	builder.WriteByte(')')
 	return builder.String()
 }

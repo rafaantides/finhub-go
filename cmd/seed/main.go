@@ -61,11 +61,11 @@ func startSeed() {
 		log.Fatal("Error seeding categories: %v", err)
 	}
 
-	if cfg.SeedPath != "" {
-		if err := seedDebts(ctx, postgresRepo, log, cfg.SeedPath); err != nil {
-			log.Fatal("Error aseeding debts: %v", err)
-		}
-	}
+	// if cfg.SeedPath != "" {
+	// 	if err := seedDebts(ctx, postgresRepo, log, cfg.SeedPath); err != nil {
+	// 		log.Fatal("Error aseeding debts: %v", err)
+	// 	}
+	// }
 
 	fmt.Println("✅ Seeding completed successfully!")
 }
@@ -107,16 +107,58 @@ func seedCategories(ctx context.Context, repo *postgresql.PostgreSQL, lg *logger
 	categories := []struct {
 		Name        string
 		Description string
+		Color       string
 	}{
-		{"Assinaturas e Streaming", "Gastos recorrentes com serviços de streaming e assinaturas digitais."},
-		{"Alimentação e Delivery", "Despesas com alimentação em restaurantes, delivery e lanches."},
-		{"Saúde e Bem-estar", "Compras relacionadas à saúde, farmácia, cosméticos e bem-estar."},
-		{"Compras e E-commerce", "Gastos com compras em lojas online e marketplaces."},
-		{"Transporte", "Despesas com aplicativos de transporte e mobilidade urbana."},
-		{"Vestuario e Estética", "Gastos com roupas, acessórios, estética e cuidados pessoais."},
-		{"Mercado e Conveniência", "Compras em supermercados, atacados e lojas de conveniência."},
-		{"Cafés e Bares", "Despesas em cafeterias, bares e estabelecimentos similares."},
-		{"Eventos e Lazer", "Gastos com cinema, shows, eventos e entretenimento."},
+		{
+			"Assinaturas e streaming",
+			"Gastos recorrentes com serviços digitais",
+			"#FF6B6B",
+		},
+		{
+			"Alimentação e delivery",
+			"Despesas com delivery, restaurantes, lanches e refeições fora de casa.",
+			"#FFA94D",
+		},
+		{
+			"Saúde e bem-estar",
+			"Gastos com farmácia, planos de saúde, terapias e autocuidado.",
+			"#20C997",
+		},
+		{
+			"Compras",
+			"Compras em lojas, marketplaces e produtos online.",
+			"#845EF7",
+		},
+		{
+			"Transporte",
+			"Custos com apps de corrida e combustíveis.",
+			"#339AF0",
+		},
+		{
+			"Vestuário e estética",
+			"Despesas com roupas, acessórios, estética e cuidados pessoais.",
+			"#FCC419",
+		},
+		{
+			"Mercado e conveniência",
+			"Compras em mercados, mercearias e lojas de conveniência.",
+			"#69DB7C",
+		},
+		{
+			"Cafés e padarias",
+			"Gastos com cafés, padarias e pequenos lanches no dia a dia.",
+			"#D97742",
+		},
+		{
+			"Bares e eventos",
+			"Despesas com bares, festas, shows, cinema e entretenimento em geral.",
+			"#DA77F2",
+		},
+		{
+			"Contas da casa",
+			"Gastos essenciais com moradia, como aluguel, condomínio, água, luz e gás.",
+			"#FFB3C1",
+		},
 	}
 
 	for _, c := range categories {
@@ -132,6 +174,7 @@ func seedCategories(ctx context.Context, repo *postgresql.PostgreSQL, lg *logger
 			Create().
 			SetName(c.Name).
 			SetDescription(c.Description).
+			SetColor(c.Color).
 			Save(ctx)
 		if err != nil {
 			return err

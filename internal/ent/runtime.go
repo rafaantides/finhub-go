@@ -38,6 +38,10 @@ func init() {
 	categoryDescName := categoryFields[0].Descriptor()
 	// category.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	category.NameValidator = categoryDescName.Validators[0].(func(string) error)
+	// categoryDescColor is the schema descriptor for color field.
+	categoryDescColor := categoryFields[2].Descriptor()
+	// category.ColorValidator is a validator for the "color" field. It is called by the builders before save.
+	category.ColorValidator = categoryDescColor.Validators[0].(func(string) error)
 	// categoryDescID is the schema descriptor for id field.
 	categoryDescID := categoryMixinFields0[0].Descriptor()
 	// category.DefaultID holds the default value on creation for the id field.

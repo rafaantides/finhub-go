@@ -42,9 +42,11 @@ type Invoice struct {
 type InvoiceEdges struct {
 	// Status holds the value of the status edge.
 	Status *PaymentStatus `json:"status,omitempty"`
+	// Debts holds the value of the debts edge.
+	Debts []*Debt `json:"debts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // StatusOrErr returns the Status value or an error if the edge
@@ -56,6 +58,15 @@ func (e InvoiceEdges) StatusOrErr() (*PaymentStatus, error) {
 		return nil, &NotFoundError{label: paymentstatus.Label}
 	}
 	return nil, &NotLoadedError{edge: "status"}
+}
+
+// DebtsOrErr returns the Debts value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvoiceEdges) DebtsOrErr() ([]*Debt, error) {
+	if e.loadedTypes[1] {
+		return e.Debts, nil
+	}
+	return nil, &NotLoadedError{edge: "debts"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -154,6 +165,11 @@ func (i *Invoice) Value(name string) (ent.Value, error) {
 // QueryStatus queries the "status" edge of the Invoice entity.
 func (i *Invoice) QueryStatus() *PaymentStatusQuery {
 	return NewInvoiceClient(i.config).QueryStatus(i)
+}
+
+// QueryDebts queries the "debts" edge of the Invoice entity.
+func (i *Invoice) QueryDebts() *DebtQuery {
+	return NewInvoiceClient(i.config).QueryDebts(i)
 }
 
 // Update returns a builder for updating this Invoice.

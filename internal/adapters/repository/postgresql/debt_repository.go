@@ -212,7 +212,7 @@ func (d *PostgreSQL) DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]
 	}
 
 	// Buscar todas as categorias
-	var allCategories []string
+	allCategories := []string{"Sem categoria"}
 	catQuery := "SELECT name FROM categories"
 	catRows, err := d.db.QueryContext(ctx, catQuery)
 	if err != nil {
@@ -232,11 +232,11 @@ func (d *PostgreSQL) DebtsSummary(ctx context.Context, flt dto.ChartFilters) ([]
 	query := `
 		SELECT 
 			DATE_TRUNC($1, d.purchase_date) AS period,
-			c.name AS category,
+			COALESCE(c.name, 'Sem categoria') AS category,
 			SUM(d.amount) AS total,
 			COUNT(*) AS transactions
 		FROM debts d
-		JOIN categories c ON d.category_id = c.id
+		LEFT JOIN categories c ON d.category_id = c.id
 		WHERE d.purchase_date BETWEEN $2 AND $3
 		GROUP BY period, category
 		ORDER BY period

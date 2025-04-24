@@ -29,6 +29,8 @@ const (
 	FieldDueDate = "due_date"
 	// EdgeStatus holds the string denoting the status edge name in mutations.
 	EdgeStatus = "status"
+	// EdgeDebts holds the string denoting the debts edge name in mutations.
+	EdgeDebts = "debts"
 	// Table holds the table name of the invoice in the database.
 	Table = "invoices"
 	// StatusTable is the table that holds the status relation/edge.
@@ -38,6 +40,13 @@ const (
 	StatusInverseTable = "payment_status"
 	// StatusColumn is the table column denoting the status relation/edge.
 	StatusColumn = "status_id"
+	// DebtsTable is the table that holds the debts relation/edge.
+	DebtsTable = "debts"
+	// DebtsInverseTable is the table name for the Debt entity.
+	// It exists in this package in order to avoid circular dependency with the "debt" package.
+	DebtsInverseTable = "debts"
+	// DebtsColumn is the table column denoting the debts relation/edge.
+	DebtsColumn = "invoice_id"
 )
 
 // Columns holds all SQL columns for invoice fields.
@@ -129,10 +138,31 @@ func ByStatusField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newStatusStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByDebtsCount orders the results by debts count.
+func ByDebtsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDebtsStep(), opts...)
+	}
+}
+
+// ByDebts orders the results by debts terms.
+func ByDebts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDebtsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStatusStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StatusInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, StatusTable, StatusColumn),
+	)
+}
+func newDebtsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DebtsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DebtsTable, DebtsColumn),
 	)
 }

@@ -4,6 +4,7 @@ import (
 	"finhub-go/internal/utils/mixins"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -30,7 +31,8 @@ func (Debt) Fields() []ent.Field {
 
 func (Debt) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("invoice", Invoice.Type).Unique().StorageKey(edge.Column("invoice_id")),
+		// TODO: deixar obrigatorio
+		edge.To("invoice", Invoice.Type).Unique().StorageKey(edge.Column("invoice_id")).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("category", Category.Type).Unique().StorageKey(edge.Column("category_id")),
 		edge.To("status", PaymentStatus.Type).Unique().StorageKey(edge.Column("status_id")),
 	}

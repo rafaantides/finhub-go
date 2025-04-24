@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"errors"
+	"finhub-go/internal/ent/debt"
 	"finhub-go/internal/ent/invoice"
 	"finhub-go/internal/ent/paymentstatus"
 	"fmt"
@@ -113,6 +114,21 @@ func (ic *InvoiceCreate) SetNillableStatusID(id *uuid.UUID) *InvoiceCreate {
 // SetStatus sets the "status" edge to the PaymentStatus entity.
 func (ic *InvoiceCreate) SetStatus(p *PaymentStatus) *InvoiceCreate {
 	return ic.SetStatusID(p.ID)
+}
+
+// AddDebtIDs adds the "debts" edge to the Debt entity by IDs.
+func (ic *InvoiceCreate) AddDebtIDs(ids ...uuid.UUID) *InvoiceCreate {
+	ic.mutation.AddDebtIDs(ids...)
+	return ic
+}
+
+// AddDebts adds the "debts" edges to the Debt entity.
+func (ic *InvoiceCreate) AddDebts(d ...*Debt) *InvoiceCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ic.AddDebtIDs(ids...)
 }
 
 // Mutation returns the InvoiceMutation object of the builder.
@@ -260,6 +276,22 @@ func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.status_id = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.DebtsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   invoice.DebtsTable,
+			Columns: []string{invoice.DebtsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(debt.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
