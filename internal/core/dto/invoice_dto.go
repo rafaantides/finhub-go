@@ -4,7 +4,6 @@ import (
 	"finhub-go/internal/core/domain"
 	"finhub-go/internal/core/errors"
 	"finhub-go/internal/utils"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,7 +12,7 @@ import (
 type InvoiceRequest struct {
 	Title     string  `json:"title"`
 	IssueDate *string `json:"issue_date"`
-	Amount    string  `json:"amount"`
+	Amount    float64 `json:"amount"`
 	DueDate   string  `json:"due_date"`
 	StatusID  *string `json:"status_id"`
 }
@@ -66,10 +65,10 @@ func (r *InvoiceRequest) ToDomain() (*domain.Invoice, error) {
 		}
 	}
 
-	amount, err := strconv.ParseFloat(r.Amount, 64)
-	if err != nil {
-		return nil, errors.InvalidParam("amount", err)
-	}
+	// amount, err := strconv.ParseFloat(r.Amount, 64)
+	// if err != nil {
+	// 	return nil, errors.InvalidParam("amount", err)
+	// }
 
-	return domain.NewInvoice(statusID, r.Title, amount, dueDate, issueDate)
+	return domain.NewInvoice(statusID, r.Title, r.Amount, dueDate, issueDate)
 }

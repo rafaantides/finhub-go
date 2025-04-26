@@ -28,7 +28,7 @@ func (s *invoiceService) CreateInvoice(ctx context.Context, input domain.Invoice
 }
 
 func (s *invoiceService) UpdateInvoice(ctx context.Context, id uuid.UUID, input domain.Invoice) (*dto.InvoiceResponse, error) {
-	return s.repo.UpdateInvoice(ctx, input)
+	return s.repo.UpdateInvoice(ctx, id, input)
 }
 
 func (s *invoiceService) DeleteInvoiceByID(ctx context.Context, id uuid.UUID) error {

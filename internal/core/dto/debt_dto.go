@@ -20,6 +20,7 @@ type DebtRequest struct {
 }
 type DebtFilters struct {
 	// REDO: o ShouldBindQuery n esta reconhecendo o *[]uuid.UUID
+	// TODO: fazer um bind que funcione com uuid.UUID
 	CategoryID *[]string `form:"category_id"`
 	StatusID   *[]string `form:"status_id"`
 	InvoiceID  *[]string `form:"invoice_id"`

@@ -159,6 +159,11 @@ func seedCategories(ctx context.Context, repo *postgresql.PostgreSQL, lg *logger
 			"Gastos essenciais com moradia, como aluguel, condomínio, água, luz e gás.",
 			"#FFB3C1",
 		},
+		{
+			"Sem categoria",
+			"Valores que não pertencem a nenhuma categoria específica.",
+			"#CBD5E1",
+		},
 	}
 
 	for _, c := range categories {

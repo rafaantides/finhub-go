@@ -123,7 +123,6 @@ func (h *InvoiceHandler) UpdateInvoiceHandler(c *gin.Context) {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))
 		return
 	}
-
 	input, err := req.ToDomain()
 	if err != nil {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))

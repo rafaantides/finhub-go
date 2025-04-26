@@ -69,12 +69,12 @@ func (d *PostgreSQL) CreateInvoice(ctx context.Context, input domain.Invoice) (*
 	return newInvoiceResponse(row)
 }
 
-func (d *PostgreSQL) UpdateInvoice(ctx context.Context, input domain.Invoice) (*dto.InvoiceResponse, error) {
+func (d *PostgreSQL) UpdateInvoice(ctx context.Context, id uuid.UUID, input domain.Invoice) (*dto.InvoiceResponse, error) {
 	updated, err := d.Client.Invoice.
-		UpdateOneID(input.ID).
+		UpdateOneID(id).
 		SetTitle(input.Title).
 		SetAmount(input.Amount).
-		SetIssueDate(*input.IssueDate).
+		SetNillableIssueDate(input.IssueDate).
 		SetDueDate(input.DueDate).
 		SetStatusID(*input.StatusID).
 		Save(ctx)

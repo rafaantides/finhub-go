@@ -40,7 +40,7 @@ func (s *uploadService) processDebts(model, action, filename string, rows [][]st
 			invoice = dto.InvoiceRequest{
 				Title:   invoiceTitle,
 				DueDate: dueDate,
-				Amount:  "0.00",
+				Amount:  0.00,
 			}
 		}
 
