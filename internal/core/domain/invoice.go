@@ -12,7 +12,7 @@ type Invoice struct {
 	// TODO: deixar o titulo unico
 	Title  string  `json:"title"`
 	Amount float64 `json:"amount"`
-	// TOD: Ver a diferença dos tipos das datas e uma forma de colocoar as duas
+	// TODO: Ver a diferença dos tipos das datas e uma forma de colocoar as duas
 	IssueDate *time.Time `json:"issue_date"`
 	DueDate   time.Time  `json:"due_date"`
 	StatusID  *uuid.UUID `json:"status_id"`

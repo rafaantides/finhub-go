@@ -15,7 +15,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "color", Type: field.TypeString, Size: 7},
+		{Name: "color", Type: field.TypeString, Nullable: true, Size: 7},
 	}
 	// CategoriesTable holds the schema information for the "categories" table.
 	CategoriesTable = &schema.Table{

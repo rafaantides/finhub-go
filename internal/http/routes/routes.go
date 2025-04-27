@@ -37,9 +37,8 @@ func (r *Router) Setup(enableDebug bool) *gin.Engine {
 	v1 := engine.Group("/api/v1")
 
 	v1.Use(middlewares.ErrorMiddleware(r.log))
-	// v1.Use(middlewares.CORSMiddleware())
-	// TODO: rever esse middlewere aqui
-	// v1.Use(middlewares.UUIDMiddleware(r.log))
+	v1.Use(middlewares.CORSMiddleware())
+	v1.Use(middlewares.UUIDMiddleware(r.log))
 
 	engine.StaticFile("/favicon.ico", "./static/favicon.ico")
 	registerDocsRoutes(engine.Group("/docs/v1"))

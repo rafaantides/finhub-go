@@ -55,9 +55,9 @@ func (d *PostgreSQL) CreatePaymentStatus(ctx context.Context, input domain.Payme
 	return dto.NewPaymentStatusResponse(row.ID, row.Name, row.Description), nil
 }
 
-func (d *PostgreSQL) UpdatePaymentStatus(ctx context.Context, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error) {
+func (d *PostgreSQL) UpdatePaymentStatus(ctx context.Context, id uuid.UUID, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error) {
 	row, err := d.Client.PaymentStatus.
-		UpdateOneID(input.ID).
+		UpdateOneID(id).
 		SetName(input.Name).
 		SetNillableDescription(input.Description).
 		Save(ctx)

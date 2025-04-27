@@ -25,7 +25,6 @@ func NewCategoryHandler(service inbound.CategoryService) *CategoryHandler {
 func (h *CategoryHandler) CreateCategoryHandler(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.CategoryRequest
-	// TODO: colocar a cor
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(appError.NewAppError(http.StatusBadRequest, err))
 		return

@@ -19,8 +19,7 @@ type DebtRequest struct {
 	CategoryID   *string `json:"category_id"`
 }
 type DebtFilters struct {
-	// REDO: o ShouldBindQuery n esta reconhecendo o *[]uuid.UUID
-	// TODO: fazer um bind que funcione com uuid.UUID
+	// TODO: fazer um bind que funcione com uuid.UUID o ShouldBindQuery n esta reconhecendo o *[]uuid.UUID
 	CategoryID *[]string `form:"category_id"`
 	StatusID   *[]string `form:"status_id"`
 	InvoiceID  *[]string `form:"invoice_id"`
@@ -72,11 +71,6 @@ func (r *DebtRequest) ToDomain() (*domain.Debt, error) {
 			return nil, errors.InvalidParam("due_date", err)
 		}
 	}
-	// TODO: rever aqui
-	// amount, err := strconv.ParseFloat(r.Amount, 64)
-	// if err != nil {
-	// 	return nil, errors.InvalidParam("amount", err)
-	// }
 
 	var invoiceID *uuid.UUID
 	if r.InvoiceID != nil {

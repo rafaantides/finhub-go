@@ -27,7 +27,7 @@ type Category struct {
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
 	// Color holds the value of the "color" field.
-	Color        string `json:"color,omitempty"`
+	Color        *string `json:"color,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -92,7 +92,8 @@ func (c *Category) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field color", values[i])
 			} else if value.Valid {
-				c.Color = value.String
+				c.Color = new(string)
+				*c.Color = value.String
 			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
@@ -144,8 +145,10 @@ func (c *Category) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("color=")
-	builder.WriteString(c.Color)
+	if v := c.Color; v != nil {
+		builder.WriteString("color=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

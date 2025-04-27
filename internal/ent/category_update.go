@@ -82,6 +82,12 @@ func (cu *CategoryUpdate) SetNillableColor(s *string) *CategoryUpdate {
 	return cu
 }
 
+// ClearColor clears the value of the "color" field.
+func (cu *CategoryUpdate) ClearColor() *CategoryUpdate {
+	cu.mutation.ClearColor()
+	return cu
+}
+
 // Mutation returns the CategoryMutation object of the builder.
 func (cu *CategoryUpdate) Mutation() *CategoryMutation {
 	return cu.mutation
@@ -165,6 +171,9 @@ func (cu *CategoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Color(); ok {
 		_spec.SetField(category.FieldColor, field.TypeString, value)
 	}
+	if cu.mutation.ColorCleared() {
+		_spec.ClearField(category.FieldColor, field.TypeString)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{category.Label}
@@ -236,6 +245,12 @@ func (cuo *CategoryUpdateOne) SetNillableColor(s *string) *CategoryUpdateOne {
 	if s != nil {
 		cuo.SetColor(*s)
 	}
+	return cuo
+}
+
+// ClearColor clears the value of the "color" field.
+func (cuo *CategoryUpdateOne) ClearColor() *CategoryUpdateOne {
+	cuo.mutation.ClearColor()
 	return cuo
 }
 
@@ -351,6 +366,9 @@ func (cuo *CategoryUpdateOne) sqlSave(ctx context.Context) (_node *Category, err
 	}
 	if value, ok := cuo.mutation.Color(); ok {
 		_spec.SetField(category.FieldColor, field.TypeString, value)
+	}
+	if cuo.mutation.ColorCleared() {
+		_spec.ClearField(category.FieldColor, field.TypeString)
 	}
 	_node = &Category{config: cuo.config}
 	_spec.Assign = _node.assignValues

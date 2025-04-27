@@ -1,7 +1,5 @@
 package discord
 
-// TODO: rever esse package as vezes n precisa ter um adapter, e mudar os logs para ingles
-
 import (
 	"bytes"
 	"context"
@@ -33,9 +31,9 @@ func NewDiscord(cch cachestorage.CacheStorage, webhookURL string) *Discord {
 func (d *Discord) send(ctx context.Context, content string) error {
 	key := "discord:rate_limit"
 
-	// Verifica se está em rate limit
+	// Check if rate limit is active
 	if _, err := d.cch.Get(ctx, key); err == nil {
-		d.log.Warn("Rate limit ativo. Ignorando envio.")
+		d.log.Warn("Rate limit active. Skipping send.")
 		return nil
 	}
 
@@ -45,7 +43,7 @@ func (d *Discord) send(ctx context.Context, content string) error {
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		d.log.Error("Erro ao serializar payload: %v", err)
+		d.log.Error("Failed to serialize payload: %v", err)
 		return err
 	}
 
@@ -57,14 +55,14 @@ func (d *Discord) send(ctx context.Context, content string) error {
 
 	if resp.StatusCode == http.StatusTooManyRequests {
 		if _, err := d.cch.Set(ctx, key, "1", 60); err != nil {
-			d.log.Error("falha ao setar rate limit no cache: %v", err)
+			d.log.Error("Failed to set rate limit in cache: %v", err)
 		}
-		d.log.Warn("Rate limit. Mensagem ignorada.")
+		d.log.Warn("Rate limit reached. Message skipped.")
 		return nil
 	}
 
 	if resp.StatusCode >= 300 {
-		d.log.Error("Falha ao enviar mensagem: %s", resp.Status)
+		d.log.Error("Failed to send message: %s", resp.Status)
 		return fmt.Errorf("failed to send message, status: %s", resp.Status)
 	}
 
@@ -76,11 +74,11 @@ func (d *Discord) SendMessage(ctx context.Context, content string) error {
 }
 
 func (d *Discord) NotifyError(ctx context.Context, location string, err error) error {
-	msg := fmt.Sprintf("Erro em `%s`\nDetalhes: ```%s```", location, err.Error())
+	msg := fmt.Sprintf("Error at `%s`\nDetails: ```%s```", location, err.Error())
 	return d.send(ctx, msg)
 }
 
 func (d *Discord) NotifyImportResult(ctx context.Context, jobID string, filename string, successCount int, failCount int) error {
-	msg := fmt.Sprintf("Resultado da importação: `%s`\njob_id: `%s`\nSucesso: `%d`\nFalha: `%d`", filename, jobID, successCount, failCount)
+	msg := fmt.Sprintf("Import result: `%s`\nJob ID: `%s`\nSuccess: `%d`\nFailure: `%d`", filename, jobID, successCount, failCount)
 	return d.send(ctx, msg)
 }

@@ -28,7 +28,7 @@ func (s *categoryService) CreateCategory(ctx context.Context, input domain.Categ
 }
 
 func (s *categoryService) UpdateCategory(ctx context.Context, id uuid.UUID, input domain.Category) (*dto.CategoryResponse, error) {
-	return s.repo.UpdateCategory(ctx, input)
+	return s.repo.UpdateCategory(ctx, id, input)
 }
 
 func (s *categoryService) DeleteCategoryByID(ctx context.Context, id uuid.UUID) error {

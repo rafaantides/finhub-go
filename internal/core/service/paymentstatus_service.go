@@ -28,7 +28,7 @@ func (s *paymentStatus) CreatePaymentStatus(ctx context.Context, input domain.Pa
 }
 
 func (s *paymentStatus) UpdatePaymentStatus(ctx context.Context, id uuid.UUID, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error) {
-	return s.repo.UpdatePaymentStatus(ctx, input)
+	return s.repo.UpdatePaymentStatus(ctx, id, input)
 }
 
 func (s *paymentStatus) DeletePaymentStatusByID(ctx context.Context, id uuid.UUID) error {

@@ -75,6 +75,14 @@ func (cc *CategoryCreate) SetColor(s string) *CategoryCreate {
 	return cc
 }
 
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (cc *CategoryCreate) SetNillableColor(s *string) *CategoryCreate {
+	if s != nil {
+		cc.SetColor(*s)
+	}
+	return cc
+}
+
 // SetID sets the "id" field.
 func (cc *CategoryCreate) SetID(u uuid.UUID) *CategoryCreate {
 	cc.mutation.SetID(u)
@@ -154,9 +162,6 @@ func (cc *CategoryCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Category.name": %w`, err)}
 		}
 	}
-	if _, ok := cc.mutation.Color(); !ok {
-		return &ValidationError{Name: "color", err: errors.New(`ent: missing required field "Category.color"`)}
-	}
 	if v, ok := cc.mutation.Color(); ok {
 		if err := category.ColorValidator(v); err != nil {
 			return &ValidationError{Name: "color", err: fmt.Errorf(`ent: validator failed for field "Category.color": %w`, err)}
@@ -215,7 +220,7 @@ func (cc *CategoryCreate) createSpec() (*Category, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := cc.mutation.Color(); ok {
 		_spec.SetField(category.FieldColor, field.TypeString, value)
-		_node.Color = value
+		_node.Color = &value
 	}
 	return _node, _spec
 }

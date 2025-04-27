@@ -83,7 +83,6 @@ func FailedToDelete(entity string, err error) error {
 }
 
 func EmptyField(field string) error {
-	// TODO: ver de criar um validation error e usar ele nessas hrs mas passar como mensagem qual campo é e problema
 	return fmt.Errorf("%s cannot be empty", field)
 }
 

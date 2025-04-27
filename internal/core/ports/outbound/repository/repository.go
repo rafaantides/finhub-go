@@ -10,14 +10,12 @@ import (
 )
 
 type Repository interface {
-	// TODO: rever esses docs
 	Close()
 
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.CategoryResponse, error)
 	GetCategoryIDByName(ctx context.Context, name *string) (*uuid.UUID, error)
 	CreateCategory(ctx context.Context, input domain.Category) (*dto.CategoryResponse, error)
-	// TODO: colocar o id como param
-	UpdateCategory(ctx context.Context, input domain.Category) (*dto.CategoryResponse, error)
+	UpdateCategory(ctx context.Context, id uuid.UUID, input domain.Category) (*dto.CategoryResponse, error)
 	DeleteCategoryByID(ctx context.Context, id uuid.UUID) error
 	ListCategories(ctx context.Context, pgn *pagination.Pagination) ([]dto.CategoryResponse, error)
 	CountCategories(ctx context.Context, pgn *pagination.Pagination) (int, error)
@@ -40,8 +38,7 @@ type Repository interface {
 
 	GetPaymentStatusByID(ctx context.Context, id uuid.UUID) (*dto.PaymentStatusResponse, error)
 	CreatePaymentStatus(ctx context.Context, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error)
-	// TODO: colocar o id como param
-	UpdatePaymentStatus(ctx context.Context, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error)
+	UpdatePaymentStatus(ctx context.Context, id uuid.UUID, input domain.PaymentStatus) (*dto.PaymentStatusResponse, error)
 	DeletePaymentStatusByID(ctx context.Context, id uuid.UUID) error
 	ListPaymentStatus(ctx context.Context, pgn *pagination.Pagination) ([]dto.PaymentStatusResponse, error)
 	CountPaymentStatus(ctx context.Context, pgn *pagination.Pagination) (int, error)

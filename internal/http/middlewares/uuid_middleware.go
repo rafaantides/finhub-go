@@ -1,6 +1,9 @@
 package middlewares
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -38,8 +41,15 @@ func validateBodyUUIDs(c *gin.Context) error {
 		return nil
 	}
 
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return err
+	}
+
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	var body map[string]interface{}
-	if err := c.ShouldBindJSON(&body); err != nil {
+	if err := json.Unmarshal(bodyBytes, &body); err != nil {
 		return err
 	}
 

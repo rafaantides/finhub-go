@@ -355,6 +355,16 @@ func ColorHasSuffix(v string) predicate.Category {
 	return predicate.Category(sql.FieldHasSuffix(FieldColor, v))
 }
 
+// ColorIsNil applies the IsNil predicate on the "color" field.
+func ColorIsNil() predicate.Category {
+	return predicate.Category(sql.FieldIsNull(FieldColor))
+}
+
+// ColorNotNil applies the NotNil predicate on the "color" field.
+func ColorNotNil() predicate.Category {
+	return predicate.Category(sql.FieldNotNull(FieldColor))
+}
+
 // ColorEqualFold applies the EqualFold predicate on the "color" field.
 func ColorEqualFold(v string) predicate.Category {
 	return predicate.Category(sql.FieldEqualFold(FieldColor, v))

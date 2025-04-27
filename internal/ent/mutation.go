@@ -329,7 +329,7 @@ func (m *CategoryMutation) Color() (r string, exists bool) {
 // OldColor returns the old "color" field's value of the Category entity.
 // If the Category object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CategoryMutation) OldColor(ctx context.Context) (v string, err error) {
+func (m *CategoryMutation) OldColor(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldColor is only allowed on UpdateOne operations")
 	}
@@ -343,9 +343,22 @@ func (m *CategoryMutation) OldColor(ctx context.Context) (v string, err error) {
 	return oldValue.Color, nil
 }
 
+// ClearColor clears the value of the "color" field.
+func (m *CategoryMutation) ClearColor() {
+	m.color = nil
+	m.clearedFields[category.FieldColor] = struct{}{}
+}
+
+// ColorCleared returns if the "color" field was cleared in this mutation.
+func (m *CategoryMutation) ColorCleared() bool {
+	_, ok := m.clearedFields[category.FieldColor]
+	return ok
+}
+
 // ResetColor resets all changes to the "color" field.
 func (m *CategoryMutation) ResetColor() {
 	m.color = nil
+	delete(m.clearedFields, category.FieldColor)
 }
 
 // Where appends a list predicates to the CategoryMutation builder.
@@ -512,6 +525,9 @@ func (m *CategoryMutation) ClearedFields() []string {
 	if m.FieldCleared(category.FieldDescription) {
 		fields = append(fields, category.FieldDescription)
 	}
+	if m.FieldCleared(category.FieldColor) {
+		fields = append(fields, category.FieldColor)
+	}
 	return fields
 }
 
@@ -528,6 +544,9 @@ func (m *CategoryMutation) ClearField(name string) error {
 	switch name {
 	case category.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case category.FieldColor:
+		m.ClearColor()
 		return nil
 	}
 	return fmt.Errorf("unknown Category nullable field %s", name)
