@@ -1,11 +1,13 @@
 package rabbitmq
 
 import (
+	"context"
+	"fmt"
 	"finhub-go/internal/core/ports/outbound/messagebus"
 	"finhub-go/internal/utils/logger"
-	"fmt"
+	"time"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RabbitMQ struct {
@@ -63,7 +65,11 @@ func (r *RabbitMQ) SendMessage(queueName string, body []byte) error {
 		return err
 	}
 
-	err := r.channel.Publish(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.channel.PublishWithContext(
+		ctx,
 		"",
 		queueName,
 		false,
@@ -112,6 +118,11 @@ func (r *RabbitMQ) ConsumeMessages(queueName string) (<-chan messagebus.Message,
 	}()
 
 	return msgChan, nil
+}
+
+func (r *RabbitMQ) DeleteQueue(queue string) error {
+	_, err := r.channel.QueueDelete(queue, false, false, false)
+	return err
 }
 
 func (r *RabbitMQ) Close() {
